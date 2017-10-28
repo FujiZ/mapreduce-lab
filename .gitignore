@@ -23,4 +23,5 @@ hs_err_pid*
 
 # IDE Files
 /.idea
+/mapreduce-lab.iml
 /src/main/java/**/META-INF
