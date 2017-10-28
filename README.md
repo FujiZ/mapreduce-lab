@@ -1,2 +1,4 @@
 # mapreduce-lab
 - WordCount
+- InvertedIndex
+
