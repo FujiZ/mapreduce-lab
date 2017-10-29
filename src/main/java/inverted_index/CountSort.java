@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class CountSort {
     public static class CountSortMapper
-            extends Mapper<Object,Text,DoubleWritable,Text> {
+            extends Mapper<Object, Text, DoubleWritable, Text> {
 
         private DoubleWritable count = new DoubleWritable();
 
@@ -25,22 +25,23 @@ public class CountSort {
                 throws IOException, InterruptedException {
             String str = value.toString();
             int start = str.indexOf('\t') + 1;
-            double count = Double.parseDouble(str.substring(start, str.indexOf(',',start)));
+            double count = Double.parseDouble(str.substring(start, str.indexOf(',', start)));
             this.count.set(count);
-            context.write(this.count,value);
+            context.write(this.count, value);
         }
     }
 
     public static class CountSortReducer
-            extends Reducer<DoubleWritable,Text,NullWritable,Text> {
+            extends Reducer<DoubleWritable, Text, NullWritable, Text> {
         @Override
         protected void reduce(DoubleWritable key, Iterable<Text> values, Context context)
                 throws IOException, InterruptedException {
-            for(Text val:values)
+            for (Text val : values)
                 context.write(NullWritable.get(), val);
         }
     }
-    public static void main(String[] args) throws Exception{
+
+    public static void main(String[] args) throws Exception {
 
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "count sort");
