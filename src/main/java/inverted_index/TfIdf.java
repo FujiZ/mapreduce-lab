@@ -89,9 +89,12 @@ public class TfIdf {
                 ++fileCount;
             }
             String author = key.toString().split(",\\s")[0];
-            double idf = Math.log(authorFileMap.get(author) / (fileCount + 1.0));
-            tfIdf.set(tf * idf);
-            context.write(key, tfIdf);
+            Integer totalCount = authorFileMap.get(author);
+            if (totalCount != null){
+                double idf = Math.log(totalCount / (fileCount + 1.0));
+                tfIdf.set(tf * idf);
+                context.write(key, tfIdf);
+            }
         }
     }
 
