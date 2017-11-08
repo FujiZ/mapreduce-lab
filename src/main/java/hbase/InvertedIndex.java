@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.partition.HashPartitioner;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +49,10 @@ public class InvertedIndex {
         protected void reduce(Text key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
             int sum = 0;
+
             for (IntWritable val : values)
                 sum += val.get();
+
             result.set(sum);
             context.write(key, result);
         }
@@ -72,6 +75,12 @@ public class InvertedIndex {
         private Text curWord = new Text();
         private List<String> postingList = new ArrayList<>();   // file: count;
         private long totalCount = 0;
+        private HbaseTest hbase;
+        @Override
+        protected void setup(Context context) {
+             this.hbase = new HbaseTest();
+        }
+
 
         @Override
         protected void reduce(Text key, Iterable<IntWritable> values, Context context)
@@ -80,13 +89,19 @@ public class InvertedIndex {
             curWord.set(keyPair[0]);
             String fileName = keyPair[1];
             int sum = 0;
-            for (IntWritable val : values)
+            int filecount = 0;
+            for (IntWritable val : values) {
                 sum += val.get();
+                filecount += 1;
+            }
             if (!lastWord.equals(curWord) && !postingList.isEmpty())
                 commitResult(context);
             postingList.add(fileName + ": " + sum);
             totalCount += sum;
             lastWord.set(keyPair[0]);
+
+            this.hbase.addData(curWord.toString(),sum/filecount);
+
         }
 
         @Override
