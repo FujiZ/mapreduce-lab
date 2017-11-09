@@ -22,13 +22,13 @@ public class HbaseTest {
         //conf.set("hbase.zookeeper.property.client","2181");
     }
 
-    public void addData(String Name,double avgcount,long count)
+    public void addData(String Name,double avgcount)
     {
         try{
             HTable table = new HTable(conf,tableName);
             Put put = new Put(Name.getBytes("UTF-8"));
             put.add(Bytes.toBytes("avgcount"),Bytes.toBytes("avgcount"),Bytes.toBytes(avgcount+""));
-            put.add(Bytes.toBytes("avgcount"),Bytes.toBytes("count"),Bytes.toBytes(count+""));
+
             table.put(put);
             table.close();
 

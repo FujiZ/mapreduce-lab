@@ -115,7 +115,7 @@ public class InvertedIndex {
             StringBuilder builder = new StringBuilder();
             builder.append(totalCount / (double) postingList.size());
             builder.append(", ");
-            this.hbase.addData(lastWord.toString(),totalCount / (double) postingList.size(),totalCount);
+            this.hbase.addData(lastWord.toString(),totalCount / (double) postingList.size());
 
             for (String str : postingList) {
                 builder.append(str);
