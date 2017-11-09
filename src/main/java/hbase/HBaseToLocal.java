@@ -2,9 +2,10 @@ package hbase;
 
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Scan;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 
 public class HBaseToLocal {
     public static void main(String[] args) {
@@ -18,6 +19,7 @@ public class HBaseToLocal {
                 fo.write(res.getValue("avgcount".getBytes(), "avgcount".getBytes()));
                 fo.write('\n');
             }
+            client.close();
             fo.close();
         } catch (IOException e) {
             e.printStackTrace();
