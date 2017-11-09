@@ -21,7 +21,7 @@ public class HbasetoLocal {
             try {
                 for (Result res : rs) {
                     fo.write(res.getRow());
-                    fo.write(' ');
+                    fo.write('\t');
                     fo.write(res.getValue("avgcount".getBytes(),"avgcount".getBytes()));
 
                     fo.write('\n');
