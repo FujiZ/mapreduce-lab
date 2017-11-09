@@ -1,4 +1,0 @@
-alla 1
-exit 1
-ni 1
-piko 1

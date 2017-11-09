@@ -1,1 +1,1 @@
-hadoop jar mapreduce-lab.jar hbase.InvertedIndex /home/mrgaoxx/Projects/input /home/mrgaoxx/Projects/output
+hadoop jar mapreduce-lab.jar hbase.InvertedIndex input output

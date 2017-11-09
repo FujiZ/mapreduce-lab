@@ -1,0 +1,4 @@
+create table Wuxia(word STRING, count DOUBLE) row format delimited fields terminated by '\t' stored as textfile;
+load data local inpath '/path/to/file.txt' into table Wuxia;
+select * from Wuxia where count>300;
+select * from Wuxia sort by count desc limit 100;

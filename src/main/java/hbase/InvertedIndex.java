@@ -75,12 +75,12 @@ public class InvertedIndex {
         private Text curWord = new Text();
         private List<String> postingList = new ArrayList<>();   // file: count;
         private long totalCount = 0;
-        private HbaseTest hbase;
-        @Override
-        protected void setup(Context context) {
-             this.hbase = new HbaseTest();
-        }
+        private HBaseClient client;
 
+        @Override
+        protected void setup(Context context) throws IOException {
+            client = new HBaseClient("Wuxia");
+        }
 
         @Override
         protected void reduce(Text key, Iterable<IntWritable> values, Context context)
@@ -89,7 +89,6 @@ public class InvertedIndex {
             curWord.set(keyPair[0]);
             String fileName = keyPair[1];
             int sum = 0;
-            int filecount = 0;
             for (IntWritable val : values) {
                 sum += val.get();
             }
@@ -98,8 +97,6 @@ public class InvertedIndex {
             postingList.add(fileName + ": " + sum);
             totalCount += sum;
             lastWord.set(keyPair[0]);
-
-
         }
 
         @Override
@@ -107,16 +104,17 @@ public class InvertedIndex {
                 throws IOException, InterruptedException {
             if (!postingList.isEmpty())
                 commitResult(context);
+            client.close();
             super.cleanup(context);
         }
 
         private void commitResult(Context context)
                 throws IOException, InterruptedException {
-            StringBuilder builder = new StringBuilder();
-            builder.append(totalCount / (double) postingList.size());
-            builder.append(", ");
-            this.hbase.addData(lastWord.toString(),totalCount / (double) postingList.size());
+            // write average count to HBase
+            client.putData(lastWord.toString(), "avgcount", "avgcount",
+                    Double.toString(totalCount / (double) postingList.size()));
 
+            StringBuilder builder = new StringBuilder();
             for (String str : postingList) {
                 builder.append(str);
                 builder.append("; ");
@@ -129,7 +127,7 @@ public class InvertedIndex {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "inverted index hbase");
+        Job job = Job.getInstance(conf, "inverted index client");
         job.setJarByClass(InvertedIndex.class);
         job.setMapperClass(InvertedIndexMapper.class);
         job.setCombinerClass(InvertedIndexCombiner.class);
