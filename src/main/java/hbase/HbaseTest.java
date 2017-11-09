@@ -22,18 +22,21 @@ public class HbaseTest {
         //conf.set("hbase.zookeeper.property.client","2181");
     }
 
-    public void addData(String Name,int avgcount)
+    public void addData(String Name,double avgcount,long count)
     {
         try{
             HTable table = new HTable(conf,tableName);
-            Put put = new Put(Bytes.toBytes(Name));
+            Put put = new Put(Name.getBytes("UTF-8"));
             put.add(Bytes.toBytes("avgcount"),Bytes.toBytes("avgcount"),Bytes.toBytes(avgcount+""));
+            put.add(Bytes.toBytes("avgcount"),Bytes.toBytes("count"),Bytes.toBytes(count+""));
             table.put(put);
-            System.out.println("sucess");
+            table.close();
+
+            //System.out.println("sucess");
         }
         catch (IOException e) {
             e.printStackTrace();
-            System.out.println("error");
+            //System.out.println("error");
         }
     }
     public ResultScanner getScanner(Scan scanner) {
@@ -42,11 +45,11 @@ public class HbaseTest {
             HTable table = new HTable(conf, tableName);
 
             ResultScanner rscanner = table.getScanner(scanner);
-            System.out.println("sucess");
+            //System.out.println("sucess");
             return rscanner;
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("error");
+            //System.out.println("error");
             return  null;
         }
     }

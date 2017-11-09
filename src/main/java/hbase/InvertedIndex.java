@@ -92,7 +92,6 @@ public class InvertedIndex {
             int filecount = 0;
             for (IntWritable val : values) {
                 sum += val.get();
-                filecount += 1;
             }
             if (!lastWord.equals(curWord) && !postingList.isEmpty())
                 commitResult(context);
@@ -100,7 +99,6 @@ public class InvertedIndex {
             totalCount += sum;
             lastWord.set(keyPair[0]);
 
-            this.hbase.addData(curWord.toString(),sum/filecount);
 
         }
 
@@ -117,6 +115,8 @@ public class InvertedIndex {
             StringBuilder builder = new StringBuilder();
             builder.append(totalCount / (double) postingList.size());
             builder.append(", ");
+            this.hbase.addData(lastWord.toString(),totalCount / (double) postingList.size(),totalCount);
+
             for (String str : postingList) {
                 builder.append(str);
                 builder.append("; ");

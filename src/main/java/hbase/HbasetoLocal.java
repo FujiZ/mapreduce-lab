@@ -23,15 +23,17 @@ public class HbasetoLocal {
                     fo.write(res.getRow());
                     fo.write(' ');
                     fo.write(res.getValue("avgcount".getBytes(),"avgcount".getBytes()));
+                    fo.write(' ');
+                    fo.write(res.getValue("avgcount".getBytes(),"count".getBytes()));
                     fo.write('\n');
                 }
             }catch (IOException e)
             {
-                System.out.println("cannot wirte");
+                //System.out.println("cannot wirte");
             }
         }catch (FileNotFoundException fe)
         {
-            System.out.println("File not found!");
+            //System.out.println("File not found!");
         }
     }
 }
