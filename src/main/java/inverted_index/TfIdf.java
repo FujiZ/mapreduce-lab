@@ -63,14 +63,14 @@ public class TfIdf {
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
             FileSystem fs = FileSystem.get(context.getConfiguration());
-            for(URI uri: context.getCacheFiles()){
+            for (URI uri : context.getCacheFiles()) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(new Path(uri))));
                 String line;
-                while ((line = reader.readLine())!= null){
+                while ((line = reader.readLine()) != null) {
                     String author = line.replaceFirst("[0-9]+.*$", "");
                     Integer count = authorFileMap.get(author);
-                    if(count!=null)
-                        authorFileMap.put(author,count+1);
+                    if (count != null)
+                        authorFileMap.put(author, count + 1);
                     else
                         authorFileMap.put(author, 1);
                 }
@@ -90,7 +90,7 @@ public class TfIdf {
             }
             String author = key.toString().split(",\\s")[0];
             Integer totalCount = authorFileMap.get(author);
-            if (totalCount != null){
+            if (totalCount != null) {
                 double idf = Math.log(totalCount / (fileCount + 1.0));
                 tfIdf.set(tf * idf);
                 context.write(key, tfIdf);

@@ -55,6 +55,11 @@
             <artifactId>hbase-common</artifactId>
             <version>1.2.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations-java5</artifactId>
+            <version>RELEASE</version>
+        </dependency>
 
     </dependencies>
 
