@@ -2,10 +2,14 @@ package triangle_count;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.*;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
@@ -19,40 +23,41 @@ import java.util.Set;
 public class TriangleCount {
 
     public static class VertexPair implements WritableComparable<VertexPair> {
-        private int first;
-        private int second;
+        // TODO change to string to fit google test bench
+        private Long first;
+        private Long second;
 
-        public void set(int first, int second) {
+        public void set(long first, long second) {
             this.first = first;
             this.second = second;
         }
 
-        public int getFirst() {
+        public Long getFirst() {
             return first;
         }
 
-        public int getSecond() {
+        public Long getSecond() {
             return second;
         }
 
         @Override
         public void write(DataOutput dataOutput) throws IOException {
-            dataOutput.writeInt(first);
-            dataOutput.writeInt(second);
+            dataOutput.writeLong(first);
+            dataOutput.writeLong(second);
         }
 
         @Override
         public void readFields(DataInput dataInput) throws IOException {
-            first = dataInput.readInt();
-            second = dataInput.readInt();
+            first = dataInput.readLong();
+            second = dataInput.readLong();
         }
 
         @Override
         public int compareTo(VertexPair o) {
-            if (first == o.first)
-                return second - o.second;
+            if (first.equals(o.first))
+                return second.compareTo(o.second);
             else
-                return first - o.first;
+                return first.compareTo(o.first);
         }
 
         @Override
@@ -62,12 +67,12 @@ public class TriangleCount {
 
         @Override
         public int hashCode() {
-            return first ^ second;
+            return first.hashCode() ^ second.hashCode();
         }
     }
 
     public static class TriangleCountMapper
-            extends Mapper<Text, Text, VertexPair, IntWritable> {
+            extends Mapper<Text, Text, VertexPair, LongWritable> {
 
         VertexPair vertexPair = new VertexPair();
 
@@ -75,12 +80,12 @@ public class TriangleCount {
         @Override
         protected void map(Text key, Text value, Context context)
                 throws IOException, InterruptedException {
-            String[] valStrList = value.toString().split("\\s");
+            String[] valStrList = value.toString().split(" ");
             // convert key & value to int
-            int keyVertex = Integer.parseInt(key.toString());
-            int[] vertexList = new int[valStrList.length];
+            long keyVertex = Long.parseLong(key.toString());
+            long[] vertexList = new long[valStrList.length];
             for (int i = 0; i < valStrList.length; ++i)
-                vertexList[i] = Integer.parseInt(valStrList[i]);
+                vertexList[i] = Long.parseLong(valStrList[i]);
             // emit <<v1,v2>,[list of vn]>
             // v1 < v2 < any of vn
             Arrays.sort(vertexList);
@@ -90,20 +95,20 @@ public class TriangleCount {
                 else
                     vertexPair.set(vertexList[i], keyVertex);
                 for (int j = vertexList.length - 1; j > i && vertexList[j] > keyVertex; --j)
-                    context.write(vertexPair, new IntWritable(vertexList[j]));
+                    context.write(vertexPair, new LongWritable(vertexList[j]));
             }
         }
     }
 
     public static class TriangleCountReducer
-            extends Reducer<VertexPair, IntWritable, NullWritable, LongWritable> {
+            extends Reducer<VertexPair, LongWritable, NullWritable, LongWritable> {
 
-        private Set<Integer> vertexSet = new HashSet<>();
+        private Set<Long> vertexSet = new HashSet<>();
         private long count = 0;
 
         @Override
-        protected void reduce(VertexPair key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            for (IntWritable vertex : values) {
+        protected void reduce(VertexPair key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
+            for (LongWritable vertex : values) {
                 if (!vertexSet.contains(vertex.get()))
                     vertexSet.add(vertex.get());
                 else
@@ -122,12 +127,14 @@ public class TriangleCount {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Configuration conf = new Configuration();
+        // change split size of input file to 1MB
+        conf.setLong(FileInputFormat.SPLIT_MAXSIZE, 1024 * 1024);
         Job job = Job.getInstance(conf, "triangle count");
         job.setJarByClass(TriangleCount.class);
         job.setMapperClass(TriangleCountMapper.class);
         job.setReducerClass(TriangleCountReducer.class);
         job.setMapOutputKeyClass(VertexPair.class);
-        job.setMapOutputValueClass(IntWritable.class);
+        job.setMapOutputValueClass(LongWritable.class);
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(LongWritable.class);
         job.setInputFormatClass(KeyValueTextInputFormat.class);
