@@ -33,9 +33,8 @@ public class TriangleCount {
             // v1 < v2 < any of vn
             Arrays.sort(vertexList);
             int pivot = ~Arrays.binarySearch(vertexList, keyVertex);
-            assert pivot >= 0;
             for (int i = 0; i < vertexList.length; ++i) {
-                if (keyVertex.compareTo(vertexList[i]) < 0)
+                if (i < pivot)
                     vertexPair.set(keyVertex + "#" + vertexList[i]);
                 else
                     vertexPair.set(vertexList[i] + "#" + keyVertex);
@@ -74,7 +73,7 @@ public class TriangleCount {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Configuration conf = new Configuration();
         // change split size of input file to 1MB
-        conf.setLong(FileInputFormat.SPLIT_MAXSIZE, 5 * 1024 * 1024);
+        conf.setLong(FileInputFormat.SPLIT_MAXSIZE, Integer.parseInt(args[2])* 1024 * 1024);
         Job job = Job.getInstance(conf, "triangle count");
         job.setJarByClass(TriangleCount.class);
         job.setMapperClass(TriangleCountMapper.class);
@@ -86,7 +85,8 @@ public class TriangleCount {
         job.setInputFormatClass(KeyValueTextInputFormat.class);
         KeyValueTextInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        job.setNumReduceTasks(Integer.parseInt(args[2])); // set reducer num to 10
-        job.waitForCompletion(true);
+        job.setNumReduceTasks(Integer.parseInt(args[3]));
+        if(!job.waitForCompletion(true))
+            throw new RuntimeException("TriangleCount failed");
     }
 }

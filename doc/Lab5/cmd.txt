@@ -1,20 +1,25 @@
-hadoop jar mapreduce-lab.jar triangle_count.AdjList /data/graphTriangleCount/twitter_graph_v2.txt twitter-adj
-hadoop jar mapreduce-lab.jar triangle_count.TriangleCount twitter-adj twitter-output 10
-hadoop jar mapreduce-lab.jar triangle_count.TriangleCountDriver /data/graphTriangleCount/twitter_graph_v2.txt twitter-adj twitter-output 10
+hadoop jar mapreduce-lab.jar triangle_count.AdjList /data/graphTriangleCount/twitter_graph_v2.txt twitter-adj undirected
+hadoop jar mapreduce-lab.jar triangle_count.TriangleCount twitter-adj twitter-output 1 10
+hadoop jar mapreduce-lab.jar triangle_count.TriangleCountDriver /data/graphTriangleCount/twitter_graph_v2.txt twitter-adj twitter-output undirected 1 10
 hdfs dfs -rm -r twitter-adj twitter-output
 
-hadoop jar mapreduce-lab.jar triangle_count.AdjList /data/graphTriangleCount/gplus_combined.unique.txt google-adj
-hadoop jar mapreduce-lab.jar triangle_count.TriangleCount google-adj google-output 30
-hadoop jar mapreduce-lab.jar triangle_count.TriangleCountDriver /data/graphTriangleCount/gplus_combined.unique.txt google-adj google-output 30
+hadoop jar mapreduce-lab.jar triangle_count.AdjList /data/graphTriangleCount/gplus_combined.unique.txt google-adj undirected
+hadoop jar mapreduce-lab.jar triangle_count.TriangleCount google-adj google-output 5 30
+hadoop jar mapreduce-lab.jar triangle_count.TriangleCountDriver /data/graphTriangleCount/gplus_combined.unique.txt google-adj google-output undirected 5 30
 hdfs dfs -rm -r google-adj google-output
 
-hadoop jar mapreduce-lab.jar triangle_count.TriangleCountDriver test.txt adj output 1
-hdfs dfs -rm -r adj output
+undirected-twitter:
+application_1508726229114_1135
+application_1508726229114_1137
 
-google:
+undirected-google:
 application_1508726229114_1140
 application_1508726229114_1178
 
-twitter:
-application_1508726229114_1135
-application_1508726229114_1137
+directed-twitter:
+application_1508726229114_1490
+application_1508726229114_1493
+
+directed-google:
+application_1508726229114_1494
+application_1508726229114_1498

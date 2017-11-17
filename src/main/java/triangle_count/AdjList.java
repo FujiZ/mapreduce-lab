@@ -100,14 +100,23 @@ public static class AdjListDirectedReducer
         Job job = Job.getInstance(conf, "adjacency list");
         job.setJarByClass(AdjList.class);
         job.setMapperClass(AdjListMapper.class);
-        // TODO can be changed to DirectedReducer
-        job.setReducerClass(AdjListUndirectedReducer.class);
+        switch (args[2]){
+            case "directed":
+                job.setReducerClass(AdjListDirectedReducer.class);
+                break;
+            case "undirected":
+                job.setReducerClass(AdjListUndirectedReducer.class);
+                break;
+            default:
+                throw new IllegalArgumentException(args[2]);
+        }
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(Text.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        job.waitForCompletion(true);
+        if (!job.waitForCompletion(true))
+            throw new RuntimeException("AdjList failed");
     }
 }
