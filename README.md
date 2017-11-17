@@ -2,3 +2,4 @@
 - WordCount
 - InvertedIndex
 - HBase & Hive
+- TriangleCount
