@@ -89,8 +89,8 @@
 近邻分类器在进行判别时通常使用多数投票法，领域中的每个样本投1票，
 领域外的样本投0票。NCA将其替换为概率投票法，对于任意样本$x_{j}$，它对$x_{i}$分类结果影响的概率为
 \[
-	p_{ij} = \frac{\exp(\lVert Ax_{i} - Ax_{j} \rVert^2)}
-	{\sum_{k \neq i} \exp(\lVert Ax_{i} - Ax_{k} \rVert^2)}, \qquad
+	p_{ij} = \frac{\exp(-\lVert Ax_{i} - Ax_{j} \rVert^2)}
+	{\sum_{k \neq i} \exp(-\lVert Ax_{i} - Ax_{k} \rVert^2)}, \qquad
 	p_{ii} = 0
 \]
 若以留一法正确率的最大化为目标，则可计算$x_{i}$的留一法正确率，
