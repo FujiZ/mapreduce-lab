@@ -6,6 +6,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 public abstract class EntryJoinReducerBase extends DataJoinReducerBase {
 
@@ -14,4 +15,5 @@ public abstract class EntryJoinReducerBase extends DataJoinReducerBase {
             throws IOException {
         super.collect(((TaggedEntry)aRecord).getKey(), aRecord, output, reporter);
     }
+
 }

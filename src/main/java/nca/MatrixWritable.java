@@ -25,29 +25,12 @@ public class MatrixWritable implements Writable {
 
     @Override
     public void write(DataOutput dataOutput) throws IOException {
-        final int n = value.getRowDimension();
-        final int m = value.getColumnDimension();
-        dataOutput.writeInt(n);
-        dataOutput.writeInt(m);
-        for (int i = 0; i < n; ++i) {
-            for (int j = 0; j < m; ++j) {
-                dataOutput.writeDouble(value.getEntry(i, j));
-            }
-        }
+        Utils.serializeRealMatrix(this.value, dataOutput);
     }
 
     @Override
     public void readFields(DataInput dataInput) throws IOException {
-        final int n = dataInput.readInt();
-        final int m = dataInput.readInt();
-        final double[][] data = new double[n][m];
-        for (int i = 0; i < n; ++i) {
-            final double[] dataI = data[i];
-            for (int j = 0; j < m; ++j) {
-                dataI[j] = dataInput.readDouble();
-            }
-        }
-        value = MatrixUtils.createRealMatrix(data);
+        value = Utils.deserializeMatrix(dataInput);
     }
 
     public void set(RealMatrix value) {

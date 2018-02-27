@@ -3,10 +3,14 @@ package nca;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,8 +41,13 @@ public class NCA {
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             super.setup(context);
-            // TODO load matrix A from hdfs, we need set path of this file in context
-            // MatrixUtils.deserializeRealMatrix();
+            // load matrix A from hdfs, we need set path of this file in context
+            Path path = new Path(context.getCacheFiles()[0].getPath());
+            FileSystem fs = path.getFileSystem(context.getConfiguration());
+            DataInputStream inputStream = new DataInputStream(fs.open(path));
+            a = Utils.deserializeMatrix(inputStream);
+            inputStream.close();
+            fs.close();
         }
 
         @Override
@@ -53,25 +62,13 @@ public class NCA {
     }
 
     // TODO compute x_{ij}x_{ij}^T
-    public static class XXTMapper
+    public static class XXtMapper
             extends Mapper<Text, MatrixWritable, Text, MatrixWritable> {
         @Override
         protected void map(Text key, MatrixWritable value, Context context)
                 throws IOException, InterruptedException {
             RealMatrix result = value.get().multiply(value.get().transpose());
             context.write(key, new MatrixWritable(result));
-        }
-    }
-
-    public static class AntiReflexiveMapper
-            extends Mapper<Text, MatrixWritable, Text, MatrixWritable> {
-        @Override
-        protected void map(Text key, MatrixWritable value, Context context)
-                throws IOException, InterruptedException {
-            // emit all entries except i,i
-            String[] keyPair = key.toString().split(",");
-            if(!keyPair[0].equals(keyPair[1]))
-                context.write(new Text(keyPair[0]), value);
         }
     }
 

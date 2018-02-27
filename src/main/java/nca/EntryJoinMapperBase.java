@@ -20,9 +20,9 @@ public abstract class EntryJoinMapperBase extends DataJoinMapperBase {
 
     @Override
     public void configure(JobConf job) {
-        super.configure(job);
         this.leftFile = job.get(NCAConfig.LEFT_FILE);
         this.rightFile = job.get(NCAConfig.RIGHT_FILE);
+        super.configure(job);
     }
 
     @Override
@@ -33,6 +33,12 @@ public abstract class EntryJoinMapperBase extends DataJoinMapperBase {
             return LEFT_TAG;
         else if (right && !left)
             return RIGHT_TAG;
+        else if (left && right) {
+            if (leftFile.length() > rightFile.length())
+                return LEFT_TAG;
+            else
+                return RIGHT_TAG;
+        }
         return null;
     }
 

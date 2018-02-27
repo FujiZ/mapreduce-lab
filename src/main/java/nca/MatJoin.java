@@ -99,6 +99,8 @@ public class MatJoin {
             Configuration conf = getConf();
             conf.set(NCAConfig.LEFT_FILE, args[0]);
             conf.set(NCAConfig.RIGHT_FILE, args[1]);
+            conf.setLong("datajoin.maxNumOfValuesPerGroup", Long.MAX_VALUE);
+
             JobConf job = new JobConf(conf, MatBinaryOp.class);
             job.setJobName(jobName);
 
