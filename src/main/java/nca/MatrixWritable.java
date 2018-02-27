@@ -9,7 +9,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public class MatrixWritable implements Writable {
-    private RealMatrix value;
+    private RealMatrix value = null;
 
     public MatrixWritable() {
     }
