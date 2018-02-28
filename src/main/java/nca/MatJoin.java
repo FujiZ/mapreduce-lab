@@ -14,7 +14,7 @@ public class MatJoin {
 
         @Override
         protected Text generateGroupKey(TaggedMapOutput aRecord) {
-            return ((TaggedEntry)aRecord).getKey();
+            return ((TaggedEntry) aRecord).getKey();
         }
     }
 
@@ -22,7 +22,7 @@ public class MatJoin {
 
         @Override
         protected Text generateGroupKey(TaggedMapOutput aRecord) {
-            Text key = ((TaggedEntry)aRecord).getKey();
+            Text key = ((TaggedEntry) aRecord).getKey();
             return new Text(key.toString().split(",")[0]);
         }
     }
@@ -36,14 +36,14 @@ public class MatJoin {
             if (tags.length < 2)
                 return null;
             // values are sorted according to tags
-            double left = ((MatrixWritable)((TaggedMatrix)values[0]).getData()).get().getEntry(0,0);
-            double right = ((MatrixWritable)((TaggedMatrix)values[1]).getData()).get().getEntry(0,0);
+            double left = ((MatrixWritable) ((TaggedMatrix) values[0]).getData()).get().getEntry(0, 0);
+            double right = ((MatrixWritable) ((TaggedMatrix) values[1]).getData()).get().getEntry(0, 0);
             TaggedEntry entry = new TaggedMatrix();
-            entry.setKey(((TaggedMatrix)values[0]).getKey());
+            entry.setKey(((TaggedMatrix) values[0]).getKey());
             if (left == 0.0)
                 entry.setData(new MatrixWritable(0));
             else
-                entry.setData(new MatrixWritable(left/right));
+                entry.setData(new MatrixWritable(left / right));
             return entry;
         }
     }
@@ -55,9 +55,9 @@ public class MatJoin {
             if (tags.length < 2)
                 return null;
             TaggedEntry entry = new TaggedMatrix();
-            double left = ((MatrixWritable)((TaggedMatrix)values[0]).getData()).get().getEntry(0,0);
-            RealMatrix right = ((MatrixWritable)((TaggedMatrix)values[1]).getData()).get();
-            entry.setKey(((TaggedMatrix)values[0]).getKey());
+            double left = ((MatrixWritable) ((TaggedMatrix) values[0]).getData()).get().getEntry(0, 0);
+            RealMatrix right = ((MatrixWritable) ((TaggedMatrix) values[1]).getData()).get();
+            entry.setKey(((TaggedMatrix) values[0]).getKey());
             entry.setData(new MatrixWritable(right.scalarMultiply(left)));
             return entry;
         }
@@ -72,10 +72,10 @@ public class MatJoin {
             if (tags.length < 2)
                 return null;
             // values are sorted according to tags
-            RealMatrix left = ((MatrixWritable)((TaggedMatrix)values[0]).getData()).get();
-            RealMatrix right = ((MatrixWritable)((TaggedMatrix)values[1]).getData()).get();
+            RealMatrix left = ((MatrixWritable) ((TaggedMatrix) values[0]).getData()).get();
+            RealMatrix right = ((MatrixWritable) ((TaggedMatrix) values[1]).getData()).get();
             TaggedEntry entry = new TaggedMatrix();
-            entry.setKey(((TaggedMatrix)values[0]).getKey());
+            entry.setKey(((TaggedMatrix) values[0]).getKey());
             entry.setData(new MatrixWritable(left.subtract(right)));
             return entry;
         }

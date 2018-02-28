@@ -19,8 +19,8 @@ public class MatrixWritable implements Writable {
     }
 
     public MatrixWritable(double value) {
-        this.value = MatrixUtils.createRealMatrix(1,1);
-        this.value.setEntry(0,0,value);
+        this.value = MatrixUtils.createRealMatrix(1, 1);
+        this.value.setEntry(0, 0, value);
     }
 
     @Override

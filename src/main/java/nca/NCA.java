@@ -1,6 +1,5 @@
 package nca;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
@@ -19,14 +18,14 @@ import java.util.Map;
 public class NCA {
 
     public static class XijMapper
-            extends Mapper<Text, Text, Text,MatrixWritable> {
+            extends Mapper<Text, Text, Text, MatrixWritable> {
         @Override
         protected void map(Text key, Text value, Context context)
                 throws IOException, InterruptedException {
             String[] valStr = value.toString().split(" ");
             double[] data = new double[valStr.length];
-            for(int i =0;i<valStr.length;++i)
-                data[i]= Double.parseDouble(valStr[i]);
+            for (int i = 0; i < valStr.length; ++i)
+                data[i] = Double.parseDouble(valStr[i]);
             RealMatrix vector = MatrixUtils.createColumnRealMatrix(data);
             context.write(key, new MatrixWritable(vector));
         }
@@ -38,6 +37,7 @@ public class NCA {
             extends Mapper<Text, MatrixWritable, Text, MatrixWritable> {
 
         private RealMatrix a;
+
         @Override
         protected void setup(Context context)
                 throws IOException, InterruptedException {
@@ -56,7 +56,7 @@ public class NCA {
             String[] keyPair = key.toString().split(",");
             double result = 0;
             if (!keyPair[0].equals(keyPair[1]))
-                result = FastMath.exp(-FastMath.pow(a.multiply(value.get()).getFrobeniusNorm(),2));
+                result = FastMath.exp(-FastMath.pow(a.multiply(value.get()).getFrobeniusNorm(), 2));
             context.write(key, new MatrixWritable(result));
         }
     }
@@ -78,7 +78,7 @@ public class NCA {
         protected void map(Text key, MatrixWritable value, Context context)
                 throws IOException, InterruptedException {
             String[] keyPair = key.toString().split(",");
-            context.write(new Text(keyPair[0]),value);
+            context.write(new Text(keyPair[0]), value);
         }
     }
 
@@ -95,11 +95,12 @@ public class NCA {
             extends Reducer<NullWritable, MatrixWritable, NullWritable, MatrixWritable> {
         RealMatrix a = null;
         double lr = 0.0;
+
         @Override
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             super.setup(context);
-            lr = context.getConfiguration().getDouble(NCAConfig.LEARNING_RATE,0.0);
+            lr = context.getConfiguration().getDouble(NCAConfig.LEARNING_RATE, 0.0);
             Configuration conf = context.getConfiguration();
             Path path = new Path(conf.get(NCAConfig.MAT_A));
             FileSystem fs = path.getFileSystem(conf);
@@ -112,7 +113,7 @@ public class NCA {
         protected void reduce(NullWritable key, Iterable<MatrixWritable> values, Context context)
                 throws IOException, InterruptedException {
             RealMatrix result = values.iterator().next().get();
-            for(MatrixWritable value: values)
+            for (MatrixWritable value : values)
                 result.add(value.get());
             // update mat A
             result = a.multiply(result);
@@ -124,8 +125,8 @@ public class NCA {
             Configuration conf = context.getConfiguration();
             Path path = new Path(conf.get(NCAConfig.MAT_A));
             FileSystem fs = path.getFileSystem(conf);
-            if(fs.exists(path))
-                fs.delete(path,false);
+            if (fs.exists(path))
+                fs.delete(path, false);
             DataOutputStream outputStream = new DataOutputStream(fs.create(path));
             Utils.serializeRealMatrix(a, outputStream);
             outputStream.close();
@@ -134,7 +135,8 @@ public class NCA {
 
     public static class SameLabelMapper
             extends Mapper<Text, MatrixWritable, Text, MatrixWritable> {
-        private Map<String,String> labels = new HashMap<>();
+        private Map<String, String> labels = new HashMap<>();
+
         @Override
         protected void setup(Context context)
                 throws IOException, InterruptedException {
@@ -143,7 +145,7 @@ public class NCA {
             Path path = new Path(context.getCacheFiles()[0].getPath());
             FileSystem fs = path.getFileSystem(context.getConfiguration());
             BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(path)));
-            for(String line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 String[] entry = line.split("\t");
                 labels.put(entry[0], entry[1]);
             }
@@ -168,7 +170,7 @@ public class NCA {
         protected void reduce(Text key, Iterable<MatrixWritable> values, Context context)
                 throws IOException, InterruptedException {
             RealMatrix result = values.iterator().next().get();
-            for(MatrixWritable value: values)
+            for (MatrixWritable value : values)
                 result.add(value.get());
             context.write(key, new MatrixWritable(result));
         }

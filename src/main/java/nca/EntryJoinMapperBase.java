@@ -45,7 +45,7 @@ public abstract class EntryJoinMapperBase extends DataJoinMapperBase {
     private TaggedMapOutput generateTaggedMapOutput(Object key, Object value) {
         TaggedMapOutput aRecord = generateTaggedMapOutput(value);
         if (aRecord != null)
-            ((TaggedEntry)aRecord).setKey((Text)key);
+            ((TaggedEntry) aRecord).setKey((Text) key);
         return aRecord;
     }
 
@@ -73,7 +73,7 @@ public abstract class EntryJoinMapperBase extends DataJoinMapperBase {
     protected TaggedMapOutput generateTaggedMapOutput(Object value) {
         TaggedEntry retv = new TaggedMatrix();
         retv.setTag(this.inputTag);
-        retv.setData((Writable)value);
+        retv.setData((Writable) value);
         return retv;
     }
 

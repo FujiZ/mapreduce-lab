@@ -71,7 +71,7 @@ public class NCADriver {
     private double lr;
 
     public NCADriver(Path rawXijPath, Path labelPath, int dim,
-                     Path workDir, Path matAPath, double lr){
+                     Path workDir, Path matAPath, double lr) {
         this.rawXijPath = rawXijPath;
         this.labelPath = labelPath;
         this.dim = dim;
@@ -84,14 +84,14 @@ public class NCADriver {
         // clean workDir
         Configuration conf = new Configuration();
         FileSystem fs = workDir.getFileSystem(conf);
-        if(fs.exists(workDir))
-            fs.delete(workDir,true);
+        if (fs.exists(workDir))
+            fs.delete(workDir, true);
         fs.mkdirs(workDir);
 
         // init matA
         RealMatrix matrix = MatrixUtils.createRealIdentityMatrix(dim);
         fs = matAPath.getFileSystem(conf);
-        fs.delete(matAPath,true);
+        fs.delete(matAPath, true);
         DataOutputStream outputStream = new DataOutputStream(fs.create(matAPath));
         Utils.serializeRealMatrix(matrix, outputStream);
         outputStream.close();
@@ -107,16 +107,16 @@ public class NCADriver {
     public void clean() throws IOException {
         Configuration conf = new Configuration();
         FileSystem fs = workDir.getFileSystem(conf);
-        fs.delete(new Path(workDir, "exp_norm"),true);
-        fs.delete(new Path(workDir, "sum_exp_norm"),true);
-        fs.delete(new Path(workDir, "p_ij"),true);
-        fs.delete(new Path(workDir, "p_i"),true);
-        fs.delete(new Path(workDir, "p_x_xt"),true);
-        fs.delete(new Path(workDir, "sum_p_x_xt"),true);
-        fs.delete(new Path(workDir, "p_sum_p_x_xt"),true);
-        fs.delete(new Path(workDir, "same_label_sum_p_x_xt"),true);
-        fs.delete(new Path(workDir, "gradient"),true);
-        fs.delete(new Path(workDir, "total_gradient"),true);
+        fs.delete(new Path(workDir, "exp_norm"), true);
+        fs.delete(new Path(workDir, "sum_exp_norm"), true);
+        fs.delete(new Path(workDir, "p_ij"), true);
+        fs.delete(new Path(workDir, "p_i"), true);
+        fs.delete(new Path(workDir, "p_x_xt"), true);
+        fs.delete(new Path(workDir, "sum_p_x_xt"), true);
+        fs.delete(new Path(workDir, "p_sum_p_x_xt"), true);
+        fs.delete(new Path(workDir, "same_label_sum_p_x_xt"), true);
+        fs.delete(new Path(workDir, "gradient"), true);
+        fs.delete(new Path(workDir, "total_gradient"), true);
     }
 
     public void train() throws Exception {
@@ -141,7 +141,7 @@ public class NCADriver {
         jobArgs[2] = new Path(workDir, "p_ij").toString();
         ToolRunner.run(new Configuration(),
                 new MatJoin.MatBinaryOp("p_ij", MatJoin.GroupMapper.class,
-                        MatJoin.NumDivReducer.class),jobArgs);
+                        MatJoin.NumDivReducer.class), jobArgs);
 
         // p_i
         job = reduceMat("p_i", NCA.SameLabelMapper.class,
@@ -156,7 +156,7 @@ public class NCADriver {
         jobArgs[2] = new Path(workDir, "p_x_xt").toString();
         ToolRunner.run(new Configuration(),
                 new MatJoin.MatBinaryOp("p_x_xt", MatJoin.DefaultMapper.class,
-                        MatJoin.NumMulMatReducer.class),jobArgs);
+                        MatJoin.NumMulMatReducer.class), jobArgs);
 
         // sum_p_x_xt
         job = reduceMat("sum_p_x_xt", NCA.GroupMapper.class,
@@ -170,7 +170,7 @@ public class NCADriver {
         jobArgs[2] = new Path(workDir, "p_sum_p_x_xt").toString();
         ToolRunner.run(new Configuration(),
                 new MatJoin.MatBinaryOp("p_sum_p_x_xt", MatJoin.DefaultMapper.class,
-                        MatJoin.NumMulMatReducer.class),jobArgs);
+                        MatJoin.NumMulMatReducer.class), jobArgs);
 
         // same_label_sum_p_x_xt
         job = reduceMat("same_label_sum_p_x_xt", NCA.SameLabelMapper.class,
@@ -185,7 +185,7 @@ public class NCADriver {
         jobArgs[2] = new Path(workDir, "gradient").toString();
         ToolRunner.run(new Configuration(),
                 new MatJoin.MatBinaryOp("gradient", MatJoin.DefaultMapper.class,
-                        MatJoin.MatSubReducer.class),jobArgs);
+                        MatJoin.MatSubReducer.class), jobArgs);
 
         // update matA
         job = updateGradient(new Path(workDir, "gradient"),
@@ -194,12 +194,12 @@ public class NCADriver {
     }
 
     public void train(int epoch) throws Exception {
-        for(int i =0; i< epoch; ++i){
+        for (int i = 0; i < epoch; ++i) {
             train();
         }
     }
 
-    private Job updateGradient(Path input,Path output) throws IOException {
+    private Job updateGradient(Path input, Path output) throws IOException {
         // use one MR to update matA
         Configuration conf = new Configuration();
         conf.setDouble(NCAConfig.LEARNING_RATE, lr);
