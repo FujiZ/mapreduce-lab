@@ -1,8 +1,10 @@
 package nca;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
@@ -10,10 +12,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -94,20 +93,21 @@ public class NCA {
     }
 
     public static class GradientReducer
-            extends Reducer<NullWritable, MatrixWritable, NullWritable, NullWritable> {
+            extends Reducer<NullWritable, MatrixWritable, NullWritable, MatrixWritable> {
+        RealMatrix a = null;
         double lr = 0.0;
         @Override
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             super.setup(context);
             lr = context.getConfiguration().getDouble(NCAConfig.LEARNING_RATE,0.0);
-            System.out.println("lr: "+lr);
-        }
-
-        @Override
-        protected void cleanup(Context context)
-                throws IOException, InterruptedException {
-            super.cleanup(context);
+            Configuration conf = context.getConfiguration();
+            Path path = new Path(conf.get(NCAConfig.MAT_A));
+            FileSystem fs = path.getFileSystem(conf);
+            DataInputStream inputStream = new DataInputStream(fs.open(path));
+            a = Utils.deserializeMatrix(inputStream);
+            inputStream.close();
+            fs.close();
         }
 
         @Override
@@ -116,7 +116,22 @@ public class NCA {
             RealMatrix result = values.iterator().next().get();
             for(MatrixWritable value: values)
                 result.add(value.get());
-            // TODO update mat A
+            // update mat A
+            result = a.multiply(result);
+            context.write(NullWritable.get(), new MatrixWritable(result));
+            System.out.println("Before Update:" + a);
+            a = a.add(result.scalarMultiply(lr));
+            System.out.println("After Update:" + a);
+
+            Configuration conf = context.getConfiguration();
+            Path path = new Path(conf.get(NCAConfig.MAT_A));
+            FileSystem fs = path.getFileSystem(conf);
+            if(fs.exists(path))
+                fs.delete(path,false);
+            DataOutputStream outputStream = new DataOutputStream(fs.create(path));
+            Utils.serializeRealMatrix(a, outputStream);
+            outputStream.close();
+            fs.close();
         }
     }
 
