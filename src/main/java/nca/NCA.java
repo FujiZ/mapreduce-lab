@@ -48,7 +48,6 @@ public class NCA {
             DataInputStream inputStream = new DataInputStream(fs.open(path));
             a = Utils.deserializeMatrix(inputStream);
             inputStream.close();
-            fs.close();
         }
 
         @Override
@@ -107,7 +106,6 @@ public class NCA {
             DataInputStream inputStream = new DataInputStream(fs.open(path));
             a = Utils.deserializeMatrix(inputStream);
             inputStream.close();
-            fs.close();
         }
 
         @Override
@@ -131,7 +129,6 @@ public class NCA {
             DataOutputStream outputStream = new DataOutputStream(fs.create(path));
             Utils.serializeRealMatrix(a, outputStream);
             outputStream.close();
-            fs.close();
         }
     }
 
@@ -151,7 +148,6 @@ public class NCA {
                 labels.put(entry[0], entry[1]);
             }
             reader.close();
-            fs.close();
         }
 
         @Override

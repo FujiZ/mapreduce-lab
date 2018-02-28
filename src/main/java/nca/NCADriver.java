@@ -87,7 +87,6 @@ public class NCADriver {
         if(fs.exists(workDir))
             fs.delete(workDir,true);
         fs.mkdirs(workDir);
-        fs.close();
 
         // init matA
         RealMatrix matrix = MatrixUtils.createRealIdentityMatrix(dim);
@@ -96,14 +95,13 @@ public class NCADriver {
         DataOutputStream outputStream = new DataOutputStream(fs.create(matAPath));
         Utils.serializeRealMatrix(matrix, outputStream);
         outputStream.close();
-        fs.close();
 
         // compute x_ij && x_xt
         Job job = parseXij(new Path(workDir, "x_ij"));
-        job.waitForCompletion(true);
+        job.waitForCompletion(false);
         job = mapMat("x_xt", NCA.XXtMapper.class,
                 new Path(workDir, "x_ij"), new Path(workDir, "x_xt"));
-        job.waitForCompletion(true);
+        job.waitForCompletion(false);
     }
 
     public void clean() throws IOException {
@@ -119,7 +117,6 @@ public class NCADriver {
         fs.delete(new Path(workDir, "same_label_sum_p_x_xt"),true);
         fs.delete(new Path(workDir, "gradient"),true);
         fs.delete(new Path(workDir, "total_gradient"),true);
-        fs.close();
     }
 
     public void train() throws Exception {
@@ -130,13 +127,13 @@ public class NCADriver {
         Job job = mapMat("exp_norm", NCA.ExpSquaredNormMapper.class,
                 new Path(workDir, "x_ij"), new Path(workDir, "exp_norm"));
         job.addCacheFile(matAPath.toUri());
-        job.waitForCompletion(true);
+        job.waitForCompletion(false);
 
         // sum_exp_norm
         job = reduceMat("sum_exp_norm", NCA.GroupMapper.class,
                 NCA.SumMatReducer.class, new Path(workDir, "exp_norm"),
                 new Path(workDir, "sum_exp_norm"));
-        job.waitForCompletion(true);
+        job.waitForCompletion(false);
 
         // p_ij
         jobArgs[0] = new Path(workDir, "exp_norm").toString();
@@ -151,7 +148,7 @@ public class NCADriver {
                 NCA.SumMatReducer.class, new Path(workDir, "p_ij"),
                 new Path(workDir, "p_i"));
         job.addCacheFile(labelPath.toUri());
-        job.waitForCompletion(true);
+        job.waitForCompletion(false);
 
         // p_x_xt
         jobArgs[0] = new Path(workDir, "p_ij").toString();
@@ -165,7 +162,7 @@ public class NCADriver {
         job = reduceMat("sum_p_x_xt", NCA.GroupMapper.class,
                 NCA.SumMatReducer.class, new Path(workDir, "p_x_xt"),
                 new Path(workDir, "sum_p_x_xt"));
-        job.waitForCompletion(true);
+        job.waitForCompletion(false);
 
         // p_sum_p_x_xt
         jobArgs[0] = new Path(workDir, "p_i").toString();
@@ -180,7 +177,7 @@ public class NCADriver {
                 NCA.SumMatReducer.class, new Path(workDir, "p_x_xt"),
                 new Path(workDir, "same_label_sum_p_x_xt"));
         job.addCacheFile(labelPath.toUri());
-        job.waitForCompletion(true);
+        job.waitForCompletion(false);
 
         // gradient
         jobArgs[0] = new Path(workDir, "p_sum_p_x_xt").toString();
@@ -193,7 +190,7 @@ public class NCADriver {
         // update matA
         job = updateGradient(new Path(workDir, "gradient"),
                 new Path(workDir, "total_gradient"));
-        job.waitForCompletion(true);
+        job.waitForCompletion(false);
     }
 
     public void train(int epoch) throws Exception {
@@ -254,7 +251,6 @@ public class NCADriver {
         double lr = Double.parseDouble(args[5]);
         int epoch = Integer.parseInt(args[6]);
 
-        // below should in loop
         NCADriver driver = new NCADriver(rawXijPath, labelPath, dim, workDir, matAPath, lr);
         driver.init();
         driver.train(epoch);
