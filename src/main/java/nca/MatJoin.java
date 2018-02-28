@@ -118,7 +118,7 @@ public class MatJoin {
             job.setOutputFormat(SequenceFileOutputFormat.class);
             FileOutputFormat.setOutputPath(job, new Path(args[2]));
 
-            JobClient.runJob(job);
+            JobClient.runJob(job).waitForCompletion();
             return 0;
         }
     }

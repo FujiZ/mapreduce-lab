@@ -31,8 +31,6 @@ public class NCA {
         }
     }
 
-    // TODO function to load matrix A from file
-    // TODO function to load label aka y from file
     public static class ExpSquaredNormMapper
             extends Mapper<Text, MatrixWritable, Text, MatrixWritable> {
 
@@ -118,9 +116,7 @@ public class NCA {
             // update mat A
             result = a.multiply(result);
             context.write(NullWritable.get(), new MatrixWritable(result));
-            System.out.println("Before Update:" + a);
             a = a.add(result.scalarMultiply(lr));
-            System.out.println("After Update:" + a);
 
             Configuration conf = context.getConfiguration();
             Path path = new Path(conf.get(NCAConfig.MAT_A));
