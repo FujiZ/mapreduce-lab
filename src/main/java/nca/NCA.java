@@ -3,15 +3,17 @@ package nca;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,9 +77,46 @@ public class NCA {
     public static class GroupMapper
             extends Mapper<Text, MatrixWritable, Text, MatrixWritable> {
         @Override
-        protected void map(Text key, MatrixWritable value, Context context) throws IOException, InterruptedException {
+        protected void map(Text key, MatrixWritable value, Context context)
+                throws IOException, InterruptedException {
             String[] keyPair = key.toString().split(",");
             context.write(new Text(keyPair[0]),value);
+        }
+    }
+
+    public static class ZipMapper
+            extends Mapper<Text, MatrixWritable, NullWritable, MatrixWritable> {
+        @Override
+        protected void map(Text key, MatrixWritable value, Context context)
+                throws IOException, InterruptedException {
+            context.write(NullWritable.get(), value);
+        }
+    }
+
+    public static class GradientReducer
+            extends Reducer<NullWritable, MatrixWritable, NullWritable, NullWritable> {
+        double lr = 0.0;
+        @Override
+        protected void setup(Context context)
+                throws IOException, InterruptedException {
+            super.setup(context);
+            lr = context.getConfiguration().getDouble(NCAConfig.LEARNING_RATE,0.0);
+            System.out.println("lr: "+lr);
+        }
+
+        @Override
+        protected void cleanup(Context context)
+                throws IOException, InterruptedException {
+            super.cleanup(context);
+        }
+
+        @Override
+        protected void reduce(NullWritable key, Iterable<MatrixWritable> values, Context context)
+                throws IOException, InterruptedException {
+            RealMatrix result = values.iterator().next().get();
+            for(MatrixWritable value: values)
+                result.add(value.get());
+            // TODO update mat A
         }
     }
 
@@ -88,7 +127,16 @@ public class NCA {
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             super.setup(context);
-            // TODO load labels from cache
+            // load labels from cache
+            Path path = new Path(context.getCacheFiles()[0].getPath());
+            FileSystem fs = path.getFileSystem(context.getConfiguration());
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(path)));
+            for(String line = reader.readLine(); line != null; line = reader.readLine()) {
+                String[] entry = line.split("\t");
+                labels.put(entry[0], entry[1]);
+            }
+            reader.close();
+            fs.close();
         }
 
         @Override
